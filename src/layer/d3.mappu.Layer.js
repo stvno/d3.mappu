@@ -28,6 +28,9 @@ d3_mappu_Layer = function(name, config){
     var addTo = function(map){
         _map = map;
         layer.drawboard = _map.svg.append('g');
+        
+        var tile = layer.drawboard.selectAll(".tile")
+        .data(d3.quadTiles(map.projection, map.zoom), key);
         _map.addLayer(layer);
         layer.draw();
         return layer;
@@ -85,7 +88,7 @@ d3_mappu_Layer = function(name, config){
     /* private: */
     layer._onAdd =  function(map){ //Adds the layer to the given map object
         _map = map;
-        drawboard = _map.svg.append('g');
+        drawboard = _map.svg.append('g');      
     };
     layer._onRemove = function(){ //Removes the layer from the map object
     };

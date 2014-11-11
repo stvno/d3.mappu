@@ -12,6 +12,7 @@
       var _data = [];
 	  var drawboard;
 	  
+       
       /* exposed properties*/
       Object.defineProperty(layer, 'data', {
         get: function() {

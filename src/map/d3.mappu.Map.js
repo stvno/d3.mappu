@@ -79,7 +79,9 @@ d3_mappu_Map = function(id, config) {
 	
     _projection
         .scale(1 / 2 / Math.PI)
-        .translate([0, 0]);
+        .translate([0, 0])
+        .rotate([0, 0])
+        .clipExtent([[0,0], [width, height]]);
     
     var _tile = d3.geo.tile()
         .size([width,height]);

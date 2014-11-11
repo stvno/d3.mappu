@@ -5,6 +5,7 @@
 <script src="../bower_components/d3/d3.js" charset="utf-8"></script>
 <script src="../bower_components/topojson/topojson.js"></script>
 <script src="../bower_components/d3-plugins/geo/tile/tile.js"></script>
+<script src="../src/core/d3.quadtiles.js"></script>
 <script src="../dist/d3.mappu.js"></script>
 
 <style>
@@ -54,17 +55,17 @@ Layer styling happens in CSS, or in a per-feature function
 
 <script>
 
-var map = new d3.mappu.Map('map', {
+var dmap = new d3.mappu.Map('map', {
         center: [6,52],
         projection: d3.geo.mercator()
         //projection: d3.geo.albers() //future work
 });
-var coords = new d3.mappu.Coordinates().addTo(map);
+var coords = new d3.mappu.Coordinates().addTo(dmap);
 
 var layer = new d3.mappu.RasterLayer('layer1', {
     ogc_type: 'tms',
     url: "http://{s}.tiles.mapbox.com/v3/examples.map-i86nkdio/{z}/{x}/{y}.png"
-}).addTo(map);
+}).addTo(dmap);
 
 var laag1 = new d3.mappu.RasterLayer('pico:pc6_gas_sjv_verwacht', {
     ogc_type: 'wms',
@@ -77,7 +78,7 @@ var laag2 = new d3.mappu.RasterLayer('pico:pico_sjv_sf', {
     //url: "http://pico.geodan.nl/geoserver/pico/wms?",
     url: "/service/pico/geoserver/pico/wms?",
     layers: 'pico:pico_sjv_sf'
-}).addTo(map);
+}).addTo(dmap);
 
 
 
@@ -105,7 +106,7 @@ var mylayer = new d3.mappu.VectorLayer('mylayer',{
                 .html('Info goes here....');
         }
     }]
-}).addTo(map);
+}).addTo(dmap);
 
 
 d3.json("gemeenten_simple.topojson", function(error, data) {
@@ -118,6 +119,36 @@ d3.json("gemeenten.topojson", function(error, data) {
   //mylayer.data = topojson.feature(data, data.objects.gemeenten).features;
 });
 
+function key(d) { return d.key.join(", "); }
+function pixel(d) { return (d | 0) + "px"; }
+
+function urlTemplate(s) {
+  return function(o) {
+    return s.replace(/\{([^\}]+)\}/g, function(_, d) {
+      var v = o[d];
+      return v != null ? v : d === "quadkey" && quadkey(o.x, o.y, o.z);
+    });
+  };
+}
+
+function quadkey(column, row, zoom) {
+  var key = [];
+  for (var i = 1; i <= zoom; i++) {
+    key.push((((row >> zoom - i) & 1) << 1) | ((column >> zoom - i) & 1));
+  }
+  return key.join("");
+}
+
+
+
+// Check for vendor prefixes, by Mike Bostock.
+var prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
+
+function prefixMatch(p) {
+  var i = -1, n = p.length, s = document.body.style;
+  while (++i < n) if (p[i] + "Transform" in s) return "-" + p[i].toLowerCase() + "-";
+  return "";
+}
 </script>
 
 </body>

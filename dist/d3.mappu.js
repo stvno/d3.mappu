@@ -91,7 +91,9 @@ d3_mappu_Map = function(id, config) {
 	
     _projection
         .scale(1 / 2 / Math.PI)
-        .translate([0, 0]);
+        .translate([0, 0])
+        .rotate([0, 0])
+        .clipExtent([[0,0], [width, height]]);
     
     var _tile = d3.geo.tile()
         .size([width,height]);
@@ -273,6 +275,9 @@ d3_mappu_Layer = function(name, config){
     var addTo = function(map){
         _map = map;
         layer.drawboard = _map.svg.append('g');
+        
+        var tile = layer.drawboard.selectAll(".tile")
+        .data(d3.quadTiles(map.projection, map.zoom), key);
         _map.addLayer(layer);
         layer.draw();
         return layer;
@@ -330,7 +335,7 @@ d3_mappu_Layer = function(name, config){
     /* private: */
     layer._onAdd =  function(map){ //Adds the layer to the given map object
         _map = map;
-        drawboard = _map.svg.append('g');
+        drawboard = _map.svg.append('g');      
     };
     layer._onRemove = function(){ //Removes the layer from the map object
     };
@@ -352,6 +357,7 @@ d3_mappu_Layer = function(name, config){
       var _data = [];
 	  var drawboard;
 	  
+       
       /* exposed properties*/
       Object.defineProperty(layer, 'data', {
         get: function() {
