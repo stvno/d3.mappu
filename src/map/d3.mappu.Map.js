@@ -25,18 +25,23 @@ d3_mappu_Map = function(id, config) {
     
     var map = {};
 	var _layers = [];
-	
-	//TODO check if elem is an actual dom-element
-	var _mapdiv = document.getElementById(id);;
+	var _mapdiv;
+	//check if elem is a dom-element or an identifier
+	if (typeof(id) == 'object'){
+	    _mapdiv = id;
+	}
+	else {
+	    _mapdiv = document.getElementById(id);
+	}
 	
 	//TODO: how to get the size of the map
-	var width = _mapdiv.clientWidth || 1024;
-	var height = _mapdiv.clientHeight || 768;
+	var _width = _mapdiv.clientWidth || 1024;
+	var _height = _mapdiv.clientHeight || 768;
 	
 	//TODO: check if SVG?
 	var _svg = d3.select(_mapdiv).append('svg')
-		.attr("width", width)
-		.attr("height", height);
+		.attr("width", _width)
+		.attr("height", _height);
 
 	//TODO parse config;
 	var _center = config.center || [0,0];
@@ -61,7 +66,7 @@ d3_mappu_Map = function(id, config) {
     };
 	
 	_projection.scale(( _zoom << 12 || 1 << 12) / 2 / Math.PI)
-        .translate([width / 2, height / 2]);
+        .translate([_width / 2, _height / 2]);
 	
     var _projcenter = _projection(_center);     
     
@@ -72,7 +77,7 @@ d3_mappu_Map = function(id, config) {
 	var _zoombehaviour = d3.behavior.zoom()
         .scale(_projection.scale() * 2 * Math.PI)
         .scaleExtent([1 << _minZoom, 1 << _maxZoom])
-        .translate([width - _projcenter[0], height - _projcenter[1]])
+        .translate([_width - _projcenter[0], _height - _projcenter[1]])
         .on("zoom", draw);
 	_svg.call(_zoombehaviour);
 	
@@ -84,7 +89,7 @@ d3_mappu_Map = function(id, config) {
         .clipExtent([[0,0], [width, height]]);
     
     var _tile = d3.geo.tile()
-        .size([width,height]);
+        .size([_width,_height]);
 
     var _tiles = _tile.scale(_zoombehaviour.scale())
           .translate(_zoombehaviour.translate())();
@@ -100,6 +105,20 @@ d3_mappu_Map = function(id, config) {
         set: function() {
             console.log("do not touch the svg");
         }
+    });
+    
+    Object.defineProperty(map, 'size', {
+            get: function(){return [_height, _width];},
+            set: function(val){
+                _height = val[0];
+                _width = val[1];
+                _tile = d3.geo.tile()
+                    .size([_width,_height]);
+                d3.select(_mapdiv).select('svg')
+                    .attr("width", _width)
+                    .attr("height", _height);
+                map.draw();
+            }
     });
      
     Object.defineProperty(map, 'mapdiv', {
